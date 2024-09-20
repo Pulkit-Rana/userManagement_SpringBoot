@@ -1,0 +1,77 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.3.3'
+	id 'io.spring.dependency-management' version '1.1.6'
+}
+
+group = 'com.syncnest'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(22)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compileOnly 'org.projectlombok:lombok'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.0'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'
+	implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-redis', version: '3.3.3'
+	implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.12.6'
+	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.12.6'
+	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.12.6'
+	implementation group: 'org.springframework.security', name: 'spring-security-oauth2-client', version: '6.3.3'
+	implementation group: 'org.springframework.security', name: 'spring-security-oauth2-jose', version: '6.3.3'
+	runtimeOnly 'com.mysql:mysql-connector-j'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+// Task to capture build date and version information
+tasks.register('generateBuildInfo') {
+    doLast {
+        def buildInfoDir = layout.buildDirectory.dir("resources/main").get().asFile
+        def buildInfoFile = new File(buildInfoDir, "build-info.properties")
+
+        // Ensure the directory exists
+        buildInfoDir.mkdirs()
+
+        // Write the build info to the file
+        buildInfoFile.withWriter { writer ->
+            writer.write("build.version=${project.version}\n")
+            writer.write("build.date=${new Date().format('yyyy-MM-dd HH:mm:ss')}\n")
+        }
+    }
+}
+
+// Ensure that build info is generated before processing resources
+processResources.dependsOn 'generateBuildInfo'
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
